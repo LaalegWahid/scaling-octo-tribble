@@ -94,17 +94,20 @@ export interface SdkClientProps {
   environment?: 'test' | 'prod';
 }
 
-export interface MainPageProps {
-  searchParams: {
-    userId: string;
-    initialStatus: KycStatus;
-    apiKey: string;
-    callbackUrl?: string;
-    successUrl?: string;
-    failureUrl?: string;
-    externalUserId: string;
-    initialProof: string | null;
-    environment?: 'test' | 'prod';
+export interface KycSearchParams {
+  userId: string;
+  initialStatus: KycStatus;
+  apiKey: string;
+  callbackUrl?: string;
+  successUrl?: string;
+  failureUrl?: string;
+  externalUserId: string;
+  initialProof: string | null;
+  environment?: 'test' | 'prod';
+}
 
-  };
+// 2. Define the Page Props using that shape wrapped in a Promise
+export interface MainPageProps {
+  params: Promise<{ slug: string }>; // If you have dynamic segments
+  searchParams: Promise<KycSearchParams>;
 }

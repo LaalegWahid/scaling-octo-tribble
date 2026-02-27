@@ -2,8 +2,6 @@ import { KycStatus, MainPageProps, SdkClientProps } from '@/features/kyc/types';
 import { verifyTokenAction } from '@/features/kyc/actions/verifyTokenAction';
 import SdkClientUI from '../features/kyc/components/SdkClientUI';
 
-
-
 export default async function Page({ searchParams }: MainPageProps) {
   const params = await searchParams;
   
@@ -18,8 +16,6 @@ export default async function Page({ searchParams }: MainPageProps) {
   if (!successUrl || !failureUrl) {
     throw new Error('Missing Success/Failure Link.');
   }
-  
-  
 
   const session = await verifyTokenAction(token);
 

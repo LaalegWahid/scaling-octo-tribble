@@ -45,15 +45,15 @@ export default function KycWizardOrchestrator({
 
   const [ocrFailed, setOcrFailed] = useState(false);
 
-useEffect(() => {
-  if (currentStep === 2) { // StepInfo - passport
-    openCamera('environment').catch(() => {});
-  } else if (currentStep === 3) { // StepSelfie
-    openCamera('user').catch(() => {});
-  } else {
-    closeCamera();
-  }
-}, [currentStep]);
+  useEffect(() => {
+    if (currentStep === 2) { // StepInfo - passport
+      openCamera('environment').catch(() => { });
+    } else if (currentStep === 3) { // StepSelfie
+      openCamera('user').catch(() => { });
+    } else {
+      closeCamera();
+    }
+  }, [currentStep]);
 
   const steps = [StepWallet, StepSigning, StepInfo, StepSelfie, StepLiveness, UserFeedback, StepReview];
   const ActiveStepComponent = steps[currentStep];
@@ -94,6 +94,11 @@ useEffect(() => {
         throw new Error('Missing selfie photo.');
       }
 
+         if (!finalData.email) {
+        throw new Error('Missing email.');
+      }
+
+
       if (!environment) {
         throw new Error('Missing environment configuration.');
       }
@@ -104,7 +109,7 @@ useEffect(() => {
           type: 'PERSON',
           firstName: '',   // extracted by Hypersign OCR
           lastName: '',
-          email: '',
+          email: finalData.email,
           dob: '',
           external_applicant_id: tokenId,
         },
@@ -200,25 +205,26 @@ useEffect(() => {
 
           {/* Content card */}
           <div className="relative rounded-2xl border border-white/12 bg-white/5 backdrop-blur-xl p-4 sm:p-6 md:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
-            <div className="w-full flex flex-row items-start gap-8 pl-8 py-8 text-left">
+            <div className="w-full flex flex-col sm:flex-row items-center sm:items-start gap-6 py-6 sm:py-8 px-4 sm:pl-8 sm:pr-4 text-left">
 
-              {/* Spinner icon — mirrors StepPending's clock */}
-              <div className="relative flex-shrink-0">
-                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center border border-white/10 relative overflow-hidden">
+              {/* Spinner icon */}
+              <div className="relative shrink-0">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/5 rounded-full flex items-center justify-center border border-white/10 relative overflow-hidden">
                   <div className="absolute inset-0 border-t-2 border-white/50 rounded-full animate-spin" />
-                  <svg className="w-10 h-10 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
 
               {/* Text */}
-              <div className="space-y-4 flex-1">
-                <h2 className="text-2xl font-bold text-white tracking-tight">
+              <div className="space-y-4 flex-1 w-full text-center sm:text-left">
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                   Submitting Your Verification
                 </h2>
                 <p className="text-foreground/60 text-sm leading-relaxed">
-                  Your biometric data is being securely transmitted and verified. <br />
+                  Your biometric data is being securely transmitted and verified.{' '}
+                  <br className="hidden sm:block" />
                   Please keep this window open — this may take up to a minute.
                 </p>
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3 w-full">

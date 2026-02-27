@@ -28,6 +28,9 @@ export default function StepInfo({
   const captureArrow = useAnimation();
   const confirmArrow = useAnimation();
 
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+
   const effectiveStep = showProofForm ? 4 : currentStep;
 
   const capturePhoto = () => {
@@ -43,17 +46,21 @@ export default function StepInfo({
     }
   };
 
-useEffect(() => {
-  if (videoRef.current && cameraStream && !capturedImage) {
-    videoRef.current.srcObject = cameraStream;
-  }
-}, [cameraStream, capturedImage]);
+  useEffect(() => {
+    if (videoRef.current && cameraStream && !capturedImage) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream, capturedImage]);
 
-// Confirm — no camera calls at all
-const handleConfirm = () => {
-  if (!capturedImage) return;
-  onNext({ documentType: 'passport', documentFront: capturedImage });
-};
+  // Confirm — no camera calls at all
+  const handleConfirm = () => {
+    if (!capturedImage) return;
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    onNext({ documentType: 'passport', documentFront: capturedImage, email });
+  };
 
   const handleRetake = () => {
     setCapturedImage(null);
@@ -107,6 +114,20 @@ const handleConfirm = () => {
                   </motion.span>
                 </motion.button>
               </header>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-white/50">Email address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                  placeholder="your@email.com"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors"
+                />
+                {emailError && (
+                  <p className="text-xs text-red-400">{emailError}</p>
+                )}
+              </div>
 
               <AnimatePresence>
                 {ocrFailed && (

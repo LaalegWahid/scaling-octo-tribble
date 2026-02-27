@@ -156,6 +156,11 @@ export async function verifyBiometrics(params: {
     }),
   });
   const data = await res.json();
+
+  console.log("[verifyBiometrics] full response:", JSON.stringify(data, null, 2));
+  console.log("[verifyBiometrics] data.data keys:", data.data ? Object.keys(data.data) : "no data field");
+  console.log("[verifyBiometrics] userId:", data.data?.userId);
+
   if (!res.ok || !data.success) throw new Error(data.message || "Biometric verification failed");
   return {
     credentials: data.data.credentials,
@@ -202,6 +207,12 @@ export async function submitConsent(params: {
     body: JSON.stringify({ sessionId: params.sessionId, presentation: vpData.presentation }),
   });
   const consentData = await consentRes.json();
+
+    console.log("[submitConsent] full response:", JSON.stringify(consentData, null, 2));
+  console.log("[submitConsent] data keys:", consentData.data ? Object.keys(consentData.data) : "no data field");
+  console.log("[submitConsent] userId:", consentData.data?.userId);
+
+  
   if (!consentRes.ok) throw new Error(consentData.message || "Consent submission failed");
   return { userId: consentData.data.userId };
 }

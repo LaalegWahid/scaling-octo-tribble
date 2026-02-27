@@ -39,6 +39,9 @@ export async function submitKYCHypersign(
   const sessionId = await initializeVerificationSession(kycAdminToken);
   const userDidMetadata = await registerUserDid(ssiAdminToken);
 
+  console.log(form)
+  console.log(form.userData)
+  console.log(form.userData.email)
   const userBearerToken = await generateKycUserSessionToken(
     { name: `${form.userData.firstName} ${form.userData.lastName}`, email: form.userData.email, userDid: userDidMetadata.did },
     kycAdminToken,
