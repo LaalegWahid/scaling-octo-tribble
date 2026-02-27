@@ -134,7 +134,7 @@ export async function verifyBiometrics(params: {
   ssiAdminToken: string;
   issuerDid: string;
   issuerMethodId: string;
-}): Promise<any[]> {
+}):  Promise<{ credentials: any[]; userId: string }> { {
   // Compress selfie before sending
   const compressedSelfie = await compressImage(params.selfieImage, 300);
 
@@ -157,8 +157,11 @@ export async function verifyBiometrics(params: {
   });
   const data = await res.json();
   if (!res.ok || !data.success) throw new Error(data.message || "Biometric verification failed");
-  return data.data.credentials;
-}
+  return {
+    credentials: data.data.credentials,
+    userId: data.data.userId,
+  };
+}}
 
 export async function submitConsent(params: {
   sessionId: string;
@@ -169,7 +172,7 @@ export async function submitConsent(params: {
   kycAdminToken: string;
   userBearerToken: string;
   ssiAdminToken: string;
-}): Promise<void> {
+}):  Promise<{ userId: string }> {
   // 1. Create VP
   const vpRes = await fetch(`${SSI_BASE_URL}/api/v1/presentation`, {
     method: "POST",
@@ -200,4 +203,5 @@ export async function submitConsent(params: {
   });
   const consentData = await consentRes.json();
   if (!consentRes.ok) throw new Error(consentData.message || "Consent submission failed");
+  return { userId: consentData.data.userId };
 }

@@ -58,7 +58,7 @@ export async function submitKYCHypersign(
   });
 
   // ── Step 3: Verify biometrics (face match) ────────────────────────────────
-  const credentials = await verifyBiometrics({
+  const { credentials, userId: hypersignUserId } = await verifyBiometrics({
     documentToken: extractionToken,
     sessionId,
     selfieImage: form.selfie,
@@ -71,25 +71,29 @@ export async function submitKYCHypersign(
   });
 
   // ── Step 4: Submit consent ────────────────────────────────────────────────
-  await submitConsent({
-    sessionId,
-    holderDid: userDidMetadata.did,
-    credentials,
-    domain: env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    verificationMethodId: userDidMetadata.verificationMethodId,
-    kycAdminToken,
-    userBearerToken,
-    ssiAdminToken,
-  });
+const { userId: consentUserId } = await submitConsent({
+  sessionId,
+  holderDid: userDidMetadata.did,
+  credentials,
+  domain: env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  verificationMethodId: userDidMetadata.verificationMethodId,
+  kycAdminToken,
+  userBearerToken,
+  ssiAdminToken,
+});
 
   // ── Step 5: DB transaction (billing + proof record) ───────────────────────
+const hypersignEmailHash = hypersignUserId ?? consentUserId;
+if (!hypersignEmailHash) throw new Error("No userId returned from Hypersign");
+
+// ── Step 5: DB transaction ────────────────────────────────────────────────
 const proof = await db.transaction(async (tx) => {
   await subtractMoneyOrThrow(tx, userId, price);
   await markTokenAsUsed(tx, tokenId);
   return await createEndUserProof(tx, {
     userId,
     tokenId,
-    applicantId: sessionId,
+    applicantId: hypersignEmailHash, // ← store the real userId, not sessionId
     kycData: form,
     walletAddress: form.walletAddress,
     walletSignature: form.walletSignature,
@@ -101,7 +105,7 @@ await submitFeedbackIfPresent(proof.id, form.feedback);
 
 const proofHash = await handleVerificationResult(
   proof.id,
-  sessionId,           // ← was: credentials array, now: sessionId for zkPass
+  hypersignEmailHash, // ← pass userId instead of sessionId
   form.userData.dob
 );
 
