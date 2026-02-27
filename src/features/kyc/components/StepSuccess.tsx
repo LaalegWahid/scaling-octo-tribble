@@ -2,28 +2,30 @@
 
 import { motion, useAnimation, AnimatePresence, Variants } from 'framer-motion';
 import WizardCard from './WizardCard';
-import { Download, Check, ArrowRight, RotateCw } from 'lucide-react';
+import { Download, Check, Copy, Share2, RotateCw } from 'lucide-react';
 import { useState } from 'react';
-import { KycDecryptedResult } from '../types';
 
 interface StepSuccessProps {
   proofHash: string;
   successUrl?: string;
-  result?: KycDecryptedResult | null;
 }
 
-export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps) {
-  const downloadArrow = useAnimation();
-  const confirmArrow = useAnimation(); 
-  const [showConfirmation, setShowConfirmation] = useState(false);
+type ActionState = 'idle' | 'success';
 
-  const maskedHash = proofHash.length > 6 
-    ? `${proofHash.substring(0, 10)}...${proofHash.substring(proofHash.length - 6)}` 
+export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps) {
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [copyState, setCopyState] = useState<ActionState>('idle');
+  const [shareState, setShareState] = useState<ActionState>('idle');
+
+  const maskedHash = proofHash.length > 6
+    ? `${proofHash.substring(0, 10)}...${proofHash.substring(proofHash.length - 6)}`
     : proofHash;
+
+  // ── Actions ────────────────────────────────────────────────────────────────
 
   const triggerDownload = () => {
     const element = document.createElement("a");
-    const file = new Blob([proofHash], {type: 'text/plain'});
+    const file = new Blob([proofHash], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
     element.download = "zkpass_proof.txt";
     document.body.appendChild(element);
@@ -31,19 +33,52 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
     document.body.removeChild(element);
   };
 
-  const handleInitialClick = () => {
+  const handleDownload = () => {
     triggerDownload();
     setShowConfirmation(true);
   };
 
-  const handleContinue = () => {
-    if (successUrl) {
-      window.location.href = successUrl;
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(proofHash);
+      setCopyState('success');
+      setTimeout(() => setCopyState('idle'), 2000);
+    } catch {
+      // Fallback for browsers that block clipboard without interaction
+      const ta = document.createElement('textarea');
+      ta.value = proofHash;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopyState('success');
+      setTimeout(() => setCopyState('idle'), 2000);
     }
   };
 
-  const handleRetryDownload = () => {
-    triggerDownload();
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'zKYC Proof Hash',
+          text: `My zKYC verification proof hash: ${proofHash}`,
+        });
+        setShareState('success');
+        setTimeout(() => setShareState('idle'), 2000);
+      } catch {
+        // User cancelled share — do nothing
+      }
+    } else {
+      // Fallback: copy to clipboard with a note
+      await handleCopy();
+    }
+  };
+
+  const handleContinue = () => {
+    if (successUrl) window.location.href = successUrl;
   };
 
   const glowVariant: Variants = {
@@ -53,21 +88,46 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
         "rgba(255, 255, 255, 0.25)",
         "rgba(255, 255, 255, 0.05)"
       ],
-      transition: {
-        duration: 2,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
+      transition: { duration: 2, repeat: Infinity, ease: "easeInOut" }
     }
   };
+
+  // ── Action button config ───────────────────────────────────────────────────
+
+  const actions = [
+    {
+      id: 'copy',
+      label: copyState === 'success' ? 'Copied!' : 'Copy',
+      icon: copyState === 'success' ? Check : Copy,
+      onClick: handleCopy,
+      active: copyState === 'success',
+    },
+    {
+      id: 'download',
+      label: 'Download',
+      icon: Download,
+      onClick: handleDownload,
+      active: false,
+    },
+    {
+      id: 'share',
+      label: shareState === 'success' ? 'Shared!' : 'Share',
+      icon: shareState === 'success' ? Check : Share2,
+      onClick: handleShare,
+      active: shareState === 'success',
+    },
+  ];
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <WizardCard currentStep={4} totalSteps={4}>
       <div className="min-h-[300px] flex items-center">
         <AnimatePresence mode="wait">
+
           {!showConfirmation ? (
-            // STATE 1: SUCCESS DISPLAY
-            <motion.div 
+            // ── STATE 1: SUCCESS + ACTIONS ───────────────────────────────────
+            <motion.div
               key="success-view"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -77,7 +137,7 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
             >
               {/* Icon */}
               <div className="relative flex-shrink-0">
-                <motion.div 
+                <motion.div
                   variants={glowVariant}
                   animate="pulse"
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center border border-white/10 relative overflow-hidden"
@@ -88,7 +148,7 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
               </div>
 
               {/* Content */}
-              <div className="space-y-4 flex-1 w-full">
+              <div className="space-y-5 flex-1 w-full">
                 <div className="space-y-1 text-center sm:text-left">
                   <h2 className="text-2xl font-bold text-white tracking-tight">
                     Identity Verified
@@ -98,51 +158,46 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
                   </p>
                 </div>
 
-                <div className="w-full space-y-2 pt-1">
-                  <label className="text-[10px] text-foreground/50 uppercase tracking-wider font-bold ml-1">
+                {/* Hash display */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-foreground/40 uppercase tracking-wider font-bold ml-1">
                     Proof Hash
                   </label>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-3 w-full">
-                    <code className="text-xs text-white/90 font-mono tracking-wide break-all line-clamp-1 select-none">
+                  <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 w-full">
+                    <code className="text-xs text-white/80 font-mono tracking-wide break-all select-none">
                       {maskedHash}
                     </code>
                   </div>
                 </div>
 
-                {/* Button */}
-                <div className="pt-2 flex justify-center sm:justify-end">
-                  <motion.button
-                    onClick={handleInitialClick}
-                    onHoverStart={() => downloadArrow.start({ y: 3, transition: { duration: 0.15 } })}
-                    onHoverEnd={() => downloadArrow.start({ y: 0, transition: { duration: 0.15 } })}
-                    whileTap={{ scale: 0.98 }}
-                    className="
-                      relative inline-flex items-center justify-center overflow-hidden
-                      rounded-full border border-white/30 bg-white/20
-                      text-white w-full sm:w-auto
-                      pl-6 pr-12 py-3 text-sm font-medium
-                      transition-[box-shadow,transform] duration-200
-                      hover:shadow-md hover:bg-white/30 active:translate-y-[1px]
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20
-                    "
-                  >
-                    <span className="whitespace-nowrap mr-2">Download Full Proof</span>
-                    <motion.span
-                      aria-hidden
-                      className="absolute right-5 top-1/2 -translate-y-1/2"
-                      animate={downloadArrow}
-                      initial={{ y: 0, opacity: 1 }}
+                {/* Three action buttons */}
+                <div className="grid grid-cols-3 gap-2">
+                  {actions.map(({ id, label, icon: Icon, onClick, active }) => (
+                    <motion.button
+                      key={id}
+                      onClick={onClick}
+                      whileTap={{ scale: 0.96 }}
+                      className={`
+                        flex flex-col items-center justify-center gap-2 rounded-2xl border py-4 px-2
+                        text-xs font-medium transition-all duration-200
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20
+                        ${active
+                          ? 'border-white/30 bg-white/15 text-white'
+                          : 'border-white/15 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white hover:border-white/25'
+                        }
+                      `}
                     >
-                      <Download className="w-4 h-4" />
-                    </motion.span>
-                  </motion.button>
+                      <Icon className="w-5 h-5" strokeWidth={1.75} />
+                      <span>{label}</span>
+                    </motion.button>
+                  ))}
                 </div>
               </div>
             </motion.div>
 
           ) : (
-            // STATE 2: CONFIRMATION DISPLAY
-            <motion.div 
+            // ── STATE 2: DOWNLOADED CONFIRMATION ────────────────────────────
+            <motion.div
               key="confirm-view"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -152,7 +207,7 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
             >
               {/* Icon */}
               <div className="relative flex-shrink-0">
-                <motion.div 
+                <motion.div
                   variants={glowVariant}
                   animate="pulse"
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center border border-white/10 relative overflow-hidden"
@@ -163,56 +218,51 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
               </div>
 
               {/* Content */}
-              <div className="space-y-4 flex-1 w-full">
+              <div className="space-y-5 flex-1 w-full">
                 <div className="space-y-1 text-center sm:text-left">
                   <h2 className="text-2xl font-bold text-white tracking-tight">
                     Download Started
                   </h2>
-                  <p className="text-foreground/60 text-sm leading-relaxed max-w-sm mx-auto sm:mx-0">
-                    Your proof file is downloading. Once you have it, you can continue to the application.
+                  <p className="text-foreground/60 text-sm leading-relaxed max-w-sm">
+                    Your proof file is downloading. Keep it safe — you&apos;ll need it to verify your identity in the future.
                   </p>
                 </div>
 
-                <div className="h-2 sm:h-4" />
-
-                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-3 pt-2">
-                  <button 
-                    onClick={handleRetryDownload}
-                    className="px-4 py-3 rounded-full text-sm font-medium text-white/50 hover:text-white transition-colors flex items-center gap-2"
+                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
+                  <button
+                    onClick={triggerDownload}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-white/40 hover:text-white transition-colors border border-white/10 hover:border-white/20"
                   >
-                    <RotateCw className="w-3 h-3" />
-                    Download Again
+                    <RotateCw className="w-3.5 h-3.5" />
+                    Download again
                   </button>
 
                   <motion.button
                     onClick={handleContinue}
-                    onHoverStart={() => confirmArrow.start({ x: 3, transition: { duration: 0.15 } })}
-                    onHoverEnd={() => confirmArrow.start({ x: 0, transition: { duration: 0.15 } })}
                     whileTap={{ scale: 0.98 }}
                     className="
                       relative inline-flex items-center justify-center overflow-hidden
                       rounded-full border border-white/30 bg-white/20
                       text-white w-full sm:w-auto
-                      pl-6 pr-12 py-3 text-sm font-medium
-                      transition-[box-shadow,transform] duration-200
+                      pl-6 pr-12 py-2.5 text-sm font-medium
+                      transition-[box-shadow,background] duration-200
                       hover:shadow-md hover:bg-white/30 active:translate-y-[1px]
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20
+                      focus:outline-none
                     "
                   >
                     <span className="whitespace-nowrap mr-2">I have the file</span>
-                    <motion.span
-                      aria-hidden
-                      className="absolute right-5 top-1/2 -translate-y-1/2"
-                      animate={confirmArrow}
-                      initial={{ x: 0, opacity: 1 }}
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </motion.span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="4" y1="12" x2="20" y2="12" />
+                        <polyline points="14 6 20 12 14 18" />
+                      </svg>
+                    </span>
                   </motion.button>
                 </div>
               </div>
             </motion.div>
           )}
+
         </AnimatePresence>
       </div>
     </WizardCard>
