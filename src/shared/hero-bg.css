@@ -1,0 +1,72 @@
+/* Hero Background - Complex pseudo-elements with gradients and animations */
+.hero-bg {
+  --purple: 168, 85, 247;
+  background: #020108 !important;
+  position: relative;
+  z-index: 0;
+}
+
+.hero-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    /* A general dark to light from top to bottom */
+    linear-gradient(to bottom, #020108 30%, transparent 70%),
+    /* Glows for where the cards are roughly. These are positioned to be behind the 3-column grid */
+    radial-gradient(ellipse 40% 30% at 25% 90%, rgba(var(--purple), 0.12), transparent),
+    radial-gradient(ellipse 40% 30% at 50% 85%, rgba(var(--purple), 0.15), transparent),
+    radial-gradient(ellipse 40% 30% at 75% 90%, rgba(var(--purple), 0.12), transparent);
+  z-index: -30;
+  pointer-events: none;
+}
+
+/* Star field with parallax effect */
+.hero-bg::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    /* Layer 1: smaller, slower stars */
+    radial-gradient(0.5px 0.5px at 10% 30%, white, transparent),
+    radial-gradient(0.5px 0.5px at 40% 60%, white, transparent),
+    radial-gradient(0.5px 0.5px at 80% 20%, white, transparent),
+    radial-gradient(0.5px 0.5px at 5% 80%, white, transparent),
+    radial-gradient(0.5px 0.5px at 95% 50%, white, transparent),
+    radial-gradient(0.5px 0.5px at 50% 10%, white, transparent),
+    radial-gradient(0.5px 0.5px at 20% 95%, white, transparent),
+    /* Layer 2: larger, faster stars */
+    radial-gradient(1px 1px at 25% 80%, white, transparent),
+    radial-gradient(1px 1px at 60% 40%, white, transparent),
+    radial-gradient(1px 1px at 90% 70%, white, transparent),
+    radial-gradient(1px 1px at 15% 5%, white, transparent),
+    radial-gradient(1px 1px at 70% 95%, white, transparent);
+  background-repeat: repeat;
+  background-size: 400px 400px, 600px 600px;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: -30;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-bg::after {
+    animation: move-stars 150s linear infinite;
+    will-change: background-position;
+    transform: translateZ(0);
+  }
+}
+
+@keyframes move-stars {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -1000px 1000px;
+  }
+}
