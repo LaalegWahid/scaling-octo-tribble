@@ -79,35 +79,24 @@ export default function KycWizardOrchestrator({
 
   // ── Submit ─────────────────────────────────────────────────────────────────
 
-  const handleInitialSubmit = async (
-    userId: string,
-    tokenId: string,
-    finalData: KycWizardState
-  ) => {
-    setIsUploading(true);
-    setErrorMessage(null);
-    try {
-      if (!finalData.documentFront) {
-        throw new Error('Missing passport photo.');
-      }
-      if (!finalData.selfieBase64) {
-        throw new Error('Missing selfie photo.');
-      }
+const handleInitialSubmit = async (
+  userId: string,
+  tokenId: string,
+  finalData: KycWizardState
+) => {
+  setIsUploading(true);
+  setErrorMessage(null);
+  try {
+    if (!finalData.documentFront) throw new Error('Missing passport photo.');
+    if (!finalData.selfieBase64) throw new Error('Missing selfie photo.');
+    if (!finalData.email) throw new Error('Missing email.');
+    if (!environment) throw new Error('Missing environment configuration.');
 
-         if (!finalData.email) {
-        throw new Error('Missing email.');
-      }
-
-
-      if (!environment) {
-        throw new Error('Missing environment configuration.');
-      }
-
-      const { proofHash: returnedHash } = await submitKycAction(
-        userId, tokenId, environment, {
+    const result = await submitKycAction(
+      userId, tokenId, environment, {
         userData: {
           type: 'PERSON',
-          firstName: '',   // extracted by Hypersign OCR
+          firstName: '',
           lastName: '',
           email: finalData.email,
           dob: '',
@@ -127,34 +116,30 @@ export default function KycWizardOrchestrator({
         walletAddress: finalData.walletAddress,
         walletSignature: finalData.walletSignature,
       }
-      );
+    );
 
-      setProofHash(returnedHash);  // ← use the returned hash
-      setStatus('Success');
-      // setApplicantId(newApplicantId || null);
-      // setStatus('Pending');
-    } catch (err: any) {
-      console.error('Submission error:', err);
-
-      const msg: string = err?.message || '';
-
-      // OCR / document extraction failed → send user back to StepInfo to re-upload
-      if (
-        msg.includes('Document extraction failed') ||
-        msg.includes('extraction') ||
-        msg.includes('OCR')
-      ) {
+    // ← Now we check the typed result, no try/catch needed for error routing
+    if (!result.ok) {
+      if (result.errorCode === 'OCR_FAILED') {
         setOcrFailed(true);
-        setCurrentStep(2); // StepInfo is index 2 in the steps array
+        setCurrentStep(2); // back to StepInfo
         return;
       }
-
-      setErrorMessage(msg || 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsUploading(false);
+      setErrorMessage(result.message || 'An unexpected error occurred.');
+      return;
     }
-  };
 
+    setProofHash(result.proofHash);
+    setStatus('Success');
+
+  } catch (err: any) {
+    // Only truly unexpected client-side errors land here
+    console.error('Submission error:', err);
+    setErrorMessage(err?.message || 'An unexpected error occurred. Please try again.');
+  } finally {
+    setIsUploading(false);
+  }
+};
   // ── Refresh ────────────────────────────────────────────────────────────────
   // --- 3. Refresh Status ---
   const handleRefreshStatus = async () => {

@@ -116,10 +116,10 @@ export async function extractDocument(params: {
 
   const data = await res.json();
 
-  if (!res.ok) {
-    // Throw with a prefix the orchestrator can detect reliably
-    throw new Error(`OCR_EXTRACTION_FAILED: ${data.message || "Document extraction failed"}`);
-  }
+if (!res.ok) {
+  // This prefix must match what submitKycAction checks for
+  throw new Error(`OCR_EXTRACTION_FAILED: ${data.message || "Document extraction failed"}`);
+}
 
   return data.data.extractionToken;
 }
@@ -212,7 +212,7 @@ export async function submitConsent(params: {
   console.log("[submitConsent] data keys:", consentData.data ? Object.keys(consentData.data) : "no data field");
   console.log("[submitConsent] userId:", consentData.data?.userId);
 
-  
+
   if (!consentRes.ok) throw new Error(consentData.message || "Consent submission failed");
   return { userId: consentData.data.userId };
 }
