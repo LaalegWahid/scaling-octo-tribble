@@ -1,7 +1,7 @@
 // features\kyc\components\StepInfo.tsx
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, JSX } from 'react';
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import { MouseEvent } from "react";
 import { Camera, Upload } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function StepInfo({
   ocrFailed,
   onOcrErrorDismiss,
   cameraStream,
-}: StepProps) {
+}: StepProps) : JSX.Element{
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,6 +119,7 @@ export default function StepInfo({
       window.location.href = successUrl || "";
 // Replace with actual success handling}
   };
+}
 
   return (
     <WizardCard currentStep={effectiveStep} totalSteps={4} onStepClick={onStepClick}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 // Components
@@ -15,7 +15,7 @@ import StepSigning from './components/StepSigning';
 import UserFeedback from './components/UserFeedback';
 
 // Types & Actions
-import { KycWizardState, KycStatus, SdkClientProps } from './types';
+import { KycWizardState, KycStatus, SdkClientProps, StepProps } from './types';
 import { submitKycAction } from './actions/submitFormAction';
 import { verifyTokenAction } from '@/features/kyc/actions/verifyTokenAction';
 import { useCameraStream } from './lib/useCameraStream';
@@ -51,7 +51,7 @@ export default function KycWizardOrchestrator({
     
   }, [currentStep]);
 
-  const steps = [ StepInfo, StepSelfie, StepReview];
+const steps: FC<StepProps>[] = [StepInfo, StepSelfie,StepLiveness, StepReview ];
   const ActiveStepComponent = steps[currentStep];
 
   const handleRequestCamera = useCallback(async (facingMode: 'user' | 'environment') => {
