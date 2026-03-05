@@ -122,6 +122,8 @@ const handleInitialSubmit = async (
         return;
       }
       setErrorMessage(result.message || 'An unexpected error occurred.');
+          setStatus('Success');
+
       return;
     }
 
@@ -145,10 +147,7 @@ const handleInitialSubmit = async (
       if (result.status === 'Success') {
         setProofHash(result.proof);
         setStatus('Success');
-      } else if (result.status === 'Error') {
-        setStatus('Error');
-        setErrorMessage('Your verification was rejected. Please contact support.');
-      }
+      } 
     } catch (e) {
       console.error('Refresh failed', e);
     } finally {
@@ -236,89 +235,91 @@ const handleInitialSubmit = async (
   }
 
   // Error state — shown for both submission errors and webhook rejections
-  if (status === 'Error' || errorMessage) {
-    return (
-      <div className="flex items-start justify-center min-h-screen px-2 py-10 sm:px-6 sm:py-16">
-        <div className="w-full max-w-full sm:max-w-2xl flex flex-col gap-4">
+  // if (status === 'Error' || errorMessage) {
+  //   return (
+  //     <div className="flex items-start justify-center min-h-screen px-2 py-10 sm:px-6 sm:py-16">
+  //       <div className="w-full max-w-full sm:max-w-2xl flex flex-col gap-4">
 
-          {/* Step indicator — all steps shown as errored */}
-          <div className="relative rounded-2xl border border-red-500/20 bg-red-500/5 backdrop-blur-xl px-4 py-4 sm:px-8 sm:py-5">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center">
-                <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-center text-xs text-red-400/70 mt-3">
-              powered by <span className="font-bold text-red-400">zKYC</span>
-            </p>
-          </div>
+  //         {/* Step indicator — all steps shown as errored */}
+  //         <div className="relative rounded-2xl border border-red-500/20 bg-red-500/5 backdrop-blur-xl px-4 py-4 sm:px-8 sm:py-5">
+  //           <div className="flex items-center justify-center gap-2">
+  //             <div className="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+  //               <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+  //                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  //               </svg>
+  //             </div>
+  //           </div>
+  //           <p className="text-center text-xs text-red-400/70 mt-3">
+  //             powered by <span className="font-bold text-red-400">zKYC</span>
+  //           </p>
+  //         </div>
 
-          {/* Error card */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-red-500/20 bg-white/5 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.25)]"
-          >
-            <div className="space-y-6">
+  //         {/* Error card */}
+  //         <motion.div
+  //           initial={{ opacity: 0, y: 12 }}
+  //           animate={{ opacity: 1, y: 0 }}
+  //           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+  //           className="relative rounded-2xl border border-red-500/20 bg-white/5 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.25)]"
+  //         >
+  //           <div className="space-y-6">
 
-              {/* Icon + heading */}
-              <div className="flex flex-col items-center gap-4 py-4 text-center">
-                <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center">
-                  <svg className="w-9 h-9 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">Submission Failed</h2>
-                  <p className="text-sm text-white/50 mt-1 max-w-sm">
-                  </p>
-                </div>
-              </div>
+  //             {/* Icon + heading */}
+  //             <div className="flex flex-col items-center gap-4 py-4 text-center">
+  //               <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center">
+  //                 <svg className="w-9 h-9 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+  //                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+  //                 </svg>
+  //               </div>
+  //               <div>
+  //                 <h2 className="text-xl font-bold text-white">Submission Failed</h2>
+  //                 <p className="text-sm text-white/50 mt-1 max-w-sm">
+  //                                     {errorMessage || 'Something went wrong during submission.'}
 
-              <hr className="border-white/10" />
+  //                 </p>
+  //               </div>
+  //             </div>
 
-              {/* Actions */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+  //             <hr className="border-white/10" />
 
-                {/* Try again — go back to review step */}
-                <button
-                  onClick={() => {
-                    setErrorMessage(null);
-                    setCurrentStep(steps.length - 1); // back to StepReview
-                  }}
-                  className="w-full sm:w-auto text-sm text-white/40 hover:text-white transition-colors px-4 py-2"
-                >
-                  ← Go back and retry
-                </button>
+  //             {/* Actions */}
+  //             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
 
-                {/* If failureUrl is set, offer redirect */}
-                {failureUrl && (
-                  <motion.a
-                    href={failureUrl}
-                    whileTap={{ scale: 0.98 }}
-                    className="
-                      relative inline-flex items-center justify-center overflow-hidden
-                      rounded-full border border-white/30 bg-white/10
-                      text-white/70
-                      px-6 py-2.5 text-sm font-medium
-                      transition-[box-shadow,background] duration-200
-                      hover:bg-white/20 hover:text-white
-                    "
-                  >
-                    Return to application
-                  </motion.a>
-                )}
-              </div>
+  //               {/* Try again — go back to review step */}
+  //               <button
+  //                 onClick={() => {
+  //                   setErrorMessage(null);
+  //                   setCurrentStep(steps.length - 1); // back to StepReview
+  //                 }}
+  //                 className="w-full sm:w-auto text-sm text-white/40 hover:text-white transition-colors px-4 py-2"
+  //               >
+  //                 ← Go back and retry
+  //               </button>
 
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
+  //               {/* If failureUrl is set, offer redirect */}
+  //               {failureUrl && (
+  //                 <motion.a
+  //                   href={failureUrl}
+  //                   whileTap={{ scale: 0.98 }}
+  //                   className="
+  //                     relative inline-flex items-center justify-center overflow-hidden
+  //                     rounded-full border border-white/30 bg-white/10
+  //                     text-white/70
+  //                     px-6 py-2.5 text-sm font-medium
+  //                     transition-[box-shadow,background] duration-200
+  //                     hover:bg-white/20 hover:text-white
+  //                   "
+  //                 >
+  //                   Return to application
+  //                 </motion.a>
+  //               )}
+  //             </div>
+
+  //           </div>
+  //         </motion.div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="relative min-h-screen flex flex-col bg-transparent">

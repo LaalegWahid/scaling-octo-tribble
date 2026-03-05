@@ -91,8 +91,6 @@ if (!hypersignEmailHash) throw new Error("No userId returned from Hypersign");
 
 // ── Step 5: DB transaction ────────────────────────────────────────────────
 const proof = await db.transaction(async (tx) => {
-  await subtractMoneyOrThrow(tx, userId, price);
-  await markTokenAsUsed(tx, tokenId);
   return await createEndUserProof(tx, {
     userId,
     tokenId,
