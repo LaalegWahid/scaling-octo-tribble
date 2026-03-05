@@ -274,7 +274,6 @@ const handleInitialSubmit = async (
                 <div>
                   <h2 className="text-xl font-bold text-white">Submission Failed</h2>
                   <p className="text-sm text-white/50 mt-1 max-w-sm">
-                    {errorMessage || 'Something went wrong during submission.'}
                   </p>
                 </div>
               </div>
