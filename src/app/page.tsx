@@ -12,8 +12,8 @@ export default async function Page({ searchParams }: MainPageProps) {
   environment: 'prod' as 'test' | 'prod',
 };
 
-const successUrl = "https://example.com/kyc/success";
-const failureUrl = "https://example.com/kyc/failure";
+const successUrl = "https://hypersign-zkyc-demo.vercel.app/success";
+const failureUrl = "https://hypersign-zkyc-demo.vercel.app/error";
 
  
 
