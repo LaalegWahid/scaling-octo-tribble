@@ -1,33 +1,33 @@
 import { KycStatus, MainPageProps, SdkClientProps } from '@/features/kyc/types';
-import { verifyTokenAction } from '@/features/kyc/actions/verifyTokenAction';
 import SdkClientUI from '../features/kyc/components/SdkClientUI';
 
 export default async function Page({ searchParams }: MainPageProps) {
   const params = await searchParams;
   
-  const token = params.apiKey;
-  const successUrl = params.successUrl; 
-  const failureUrl = params.failureUrl; 
+  const mockSession = {
+  userId: "usr_9f3b2c7a8d1e4f6a",
+  status: "Register" as KycStatus,
+  tokenId: "tok_4a7c91e2b6d34f8a",
+  proof: "proof_8c2f1a9d7b6e3c4f",
+  environment: 'prod' as 'test' | 'prod',
+};
 
-  if (!token) {
-    throw new Error('Missing security token.');
-  } 
+const successUrl = "https://example.com/kyc/success";
+const failureUrl = "https://example.com/kyc/failure";
 
-  if (!successUrl || !failureUrl) {
-    throw new Error('Missing Success/Failure Link.');
-  }
+ 
 
-  const session = await verifyTokenAction(token);
+
 
   const sdkClientProps : SdkClientProps = {
-     userId       :session.userId ,
-     initialStatus:session.status ,
-     tokenId      :session.tokenId,
+     userId       :mockSession.userId ,
+     initialStatus:mockSession.status ,
+     tokenId      :mockSession.tokenId,
      successUrl   :successUrl,
      failureUrl   :failureUrl,
-     initialProof :session.proof,
+     initialProof :mockSession.proof,
      externalUserId: "sadsa",
-     environment: session.environment,
+     environment: mockSession.environment,
   }
 
   return (

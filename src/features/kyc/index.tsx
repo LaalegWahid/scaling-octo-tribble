@@ -46,16 +46,12 @@ export default function KycWizardOrchestrator({
   const [ocrFailed, setOcrFailed] = useState(false);
 
   useEffect(() => {
-    if (currentStep === 2) { // StepInfo - passport
-      openCamera('environment').catch(() => { });
-    } else if (currentStep === 3) { // StepSelfie
+   // StepSelfie
       openCamera('user').catch(() => { });
-    } else {
-      closeCamera();
-    }
+    
   }, [currentStep]);
 
-  const steps = [StepWallet, StepSigning, StepInfo, StepSelfie, StepLiveness, UserFeedback, StepReview];
+  const steps = [ StepInfo, StepSelfie, StepReview];
   const ActiveStepComponent = steps[currentStep];
 
   const handleRequestCamera = useCallback(async (facingMode: 'user' | 'environment') => {
@@ -135,7 +131,7 @@ const handleInitialSubmit = async (
   } catch (err: any) {
     // Only truly unexpected client-side errors land here
     console.error('Submission error:', err);
-    setErrorMessage(err?.message || 'An unexpected error occurred. Please try again.');
+    setErrorMessage(err?.message.details[0] || 'An unexpected error occurred. Please try again.');
   } finally {
     setIsUploading(false);
   }
