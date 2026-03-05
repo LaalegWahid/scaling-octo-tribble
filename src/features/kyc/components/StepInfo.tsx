@@ -116,8 +116,7 @@ export default function StepInfo({
   const handleProofVerify = async (proofCode: string) => {
     const result = await verifyProofAction(proofCode);
     if (result.exists === true) {
-      window.location.href = successUrl || "";
-    }
+console.log('Proof verified successfully'); // Replace with actual success handling}
   };
 
   return (

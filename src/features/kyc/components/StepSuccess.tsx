@@ -78,8 +78,7 @@ export default function StepSuccess({ proofHash, successUrl }: StepSuccessProps)
   };
 
   const handleContinue = () => {
-    if (successUrl) window.location.href = successUrl;
-  };
+console.log('User confirmed ');};
 
   const glowVariant: Variants = {
     pulse: {
